@@ -1,4 +1,4 @@
-function FirstExtension() {
+(function FirstExtension() {
     
     firstExtension = function() {};
     firstExtension.prototype = new Extension('FirstExtension');
@@ -32,4 +32,4 @@ function FirstExtension() {
     ];
 
     NetsBloxExtensions.register(firstExtension);
-}
+})();

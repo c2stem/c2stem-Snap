@@ -107,7 +107,8 @@ class ExtensionRegistry {
             SpriteMorph.prototype.blocks[block.name] = {
                 type: block.type,
                 category: block.category,
-                spec: block.spec
+                spec: block.spec,
+                defaults: block.defaults
             };
             Process.prototype[block.name] = block.impl;
         });
