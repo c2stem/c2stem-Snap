@@ -50,7 +50,7 @@ class ExtensionRegistry {
         }
 
         try {
-            this.validate(extension);
+            //this.validate(extension);
         } catch (err) {
             this.ide.showMessage(`Unable to load extension "${extension.name}": ${err.message}`);
             return;
