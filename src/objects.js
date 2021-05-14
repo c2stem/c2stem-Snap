@@ -2783,12 +2783,21 @@ SpriteMorph.prototype.blockTemplates = function (category) {
     } else if (cat === 'custom') {
         blocks.push(this.makeBlockButton());
     } else {
+        let report_flag = false;
         const ide = this.parentThatIsA(IDE_Morph);
         const extBlocks = ide.extensions.getBlockTemplates(cat)
             .map(item => {
                 const isBlockName = typeof item === 'string' && !['-', '='].includes(item);
                 if (isBlockName) {
                     return block(item);
+                }else if(item.includes('report')) {
+                    if(report_flag){
+                        report_flag = false;
+                        return block(item);
+                    }else{
+                        report_flag = true;
+                        return watcherToggle(item);
+                    }
                 }
                 return item;
             });
