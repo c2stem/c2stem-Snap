@@ -2787,7 +2787,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         const ide = this.parentThatIsA(IDE_Morph);
         const extBlocks = ide.extensions.getBlockTemplates(cat)
             .map(item => {
-                const isBlockName = typeof item === 'string' && !['-', '='].includes(item);
+                const isBlockName = typeof item === 'string' && !['-', '='].includes(item) && !item.includes('report');
                 if (isBlockName) {
                     return block(item);
                 }else if(item.includes('report')) {

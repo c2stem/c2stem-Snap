@@ -1,4 +1,4 @@
-(function SimulationExtension() {
+function SimulationExtension() {
     
     simulationExtension = function() {};
     simulationExtension.prototype = new Extension('SimulationExtension');
@@ -28,30 +28,47 @@
                 'changePhysicsXPosition',
                 'changePhysicsYPosition',
                 'changePhysicsPosition',
+                'setXVelocity',
+                'setYVelocity',
+                'setVelocity',
+                'changeXVelocity',
+                'changeYVelocity',
+                'changeVelocity',
+                'setXAcceleration',
+                'setYAcceleration',
+                'setAcceleration',
                 '-',
                 '-',
-                'simulationTimereport',
-                'simulationTimereport',
-                'deltaTimereport',
-                'deltaTimereport',
-                'physicsXPositionreport',
-                'physicsXPositionreport',
-                'physicsYPositionreport',
-                'physicsYPositionreport'
+                'reportsimulationTime',
+                'reportsimulationTime',
+                'reportdeltaTime',
+                'reportdeltaTime',
+                'reportphysicsXPosition',
+                'reportphysicsXPosition',
+                'reportphysicsYPosition',
+                'reportphysicsYPosition',
+                'reportxVelocity',
+                'reportxVelocity',
+                'reportyVelocity',
+                'reportyVelocity',
+                'reportxAcceleration',
+                'reportxAcceleration',
+                'reportyAcceleration',
+                'reportyAcceleration',
 
             ]
         )
     ];
     simulationExtension.prototype.getBlocks = () => [
         new Extension.Block(
-            'simulationTimereport',
+            'reportsimulationTime',
             'reporter',
             'Simulation',
             'time in s',
             []
         ),
         new Extension.Block(
-            'deltaTimereport',
+            'reportdeltaTime',
             'reporter',
             'Simulation',
             '\u2206t in s',
@@ -107,14 +124,14 @@
             [0]
         ),
         new Extension.Block(
-            'physicsXPositionreport',
+            'reportphysicsXPosition',
             'repoter',
             'Simulation',
             'x position in m',
             []
         ),
         new Extension.Block(
-            'physicsYPositionreport',
+            'reportphysicsYPosition',
             'reporter',
             'Simulation',
             'y position in m',
@@ -147,6 +164,97 @@
             'Simulation',
             'change position by x: %n y: %n m',
             [0, 0]
+        ),
+        new Extension.Block(
+            'setXVelocity',
+            'command',
+            'Simulation',
+            'set x velocity to %n m/s',
+            [0]
+        ),
+        new Extension.Block(
+            'setYVelocity',
+            'command',
+            'Simulation',
+            'set y velocity to %n m/s',
+            [0]
+        ),
+        new Extension.Block(
+            'setVelocity',
+            'command',
+            'Simulation',
+            'set velocity to x: %n y: %n m/s',
+            [0, 0]
+        ),
+        new Extension.Block(
+            'reportxVelocity',
+            'reporter',
+            'Simulation',
+            'x velocity in m/s',
+            []
+        ),
+        new Extension.Block(
+            'reportyVelocity',
+            'reporter',
+            'Simulation',
+            'y velocity in m/s',
+            []
+        ),
+        new Extension.Block(
+            'changeXVelocity',
+            'command',
+            'Simulation',
+            'change x velocity to %n m/s',
+            [0]
+        ),
+        new Extension.Block(
+            'changeYVelocity',
+            'command',
+            'Simulation',
+            'change y velocity to %n m/s',
+            [0]
+        ),
+        new Extension.Block(
+            'changeVelocity',
+            'command',
+            'Simulation',
+            'change velocity to x: %n y: %n m/s',
+            [0, 0]
+        ),
+        new Extension.Block(
+            'setXAcceleration',
+            'command',
+            'Simulation',
+            'set x acceleration to %n m/s\u00b2',
+            [0]
+        ),
+        new Extension.Block(
+            'setYAcceleration',
+            'command',
+            'Simulation',
+            'set y acceleration to %n m/s\u00b2',
+            [0]
+        ),
+        new Extension.Block(
+            'setAcceleration',
+            'command',
+            'Simulation',
+            'set acceleration to x: %n y: %n m/s\u00b2',
+            [0, 0]
+        ),
+        new Extension.Block(
+            'reportxAcceleration',
+            'reporter',
+            'Simulation',
+            'x acceleration in m/s\u00b2',
+            []
+        ),
+        new Extension.Block(
+            'reportyAcceleration',
+            'reporter',
+            'Simulation',
+            'y acceleration in m/s\u00b2',
+            []
         )
 
     ];
@@ -187,9 +295,9 @@
         }
     };
     
-    SpriteMorph.prototype.deltaTimereport = function () {
+    SpriteMorph.prototype.reportdeltaTime = function () {
         var stage = this.getStage();
-        return (stage && stage.deltaTimereport()) || 0;
+        return (stage && stage.reportdeltaTime()) || 0;
     };
     
     SpriteMorph.prototype.setDeltaTime = function (dt) {
@@ -199,9 +307,9 @@
         }
     };
     
-    SpriteMorph.prototype.simulationTimereport = function () {
+    SpriteMorph.prototype.reportsimulationTime = function () {
         var stage = this.getStage();
-        return (stage && stage.simulationTimereport()) || 0;
+        return (stage && stage.reportsimulationTime()) || 0;
     };
 
     SpriteMorph.prototype.physicsScale = function () {
@@ -246,13 +354,13 @@
         this.setPhysicsPosition(this.physicsXPosition() + dx, this.physicsYPosition() + dy);
     };
       
-    SpriteMorph.prototype.physicsXPositionreport = function () {
+    SpriteMorph.prototype.reportphysicsXPosition = function () {
         var s = this.physicsScale();
         var o = this.physicsOrigin();
         return (this.xPosition() - o.x) / s;
     };
       
-    SpriteMorph.prototype.physicsYPositionreport = function () {
+    SpriteMorph.prototype.reportphysicsYPosition = function () {
         var s = this.physicsScale();
         var o = this.physicsOrigin();
         return (this.yPosition() - o.y) / s;
@@ -263,7 +371,70 @@
             return morph.selector === "doSimulationStep";
         });
     };
-
+    SpriteMorph.prototype.setXVelocity = function (v) {
+        if (this.physicsBody && this.physicsMode === "dynamic") {
+          this.physicsBody.velocity[0] = +v;
+        } else {
+          this.physicsXVelocity = +v;
+        }
+    };
+    
+    SpriteMorph.prototype.setYVelocity = function (v) {
+        if (this.physicsBody && this.physicsMode === "dynamic") {
+            this.physicsBody.velocity[1] = +v;
+        } else {
+            this.physicsYVelocity = +v;
+        }
+    };
+    
+    SpriteMorph.prototype.reportxVelocity = function () {
+        if (this.physicsBody && this.physicsMode === "dynamic") {
+            return this.physicsBody.velocity[0];
+        } else {
+            return this.physicsXVelocity || 0;
+        }
+    };
+    
+    SpriteMorph.prototype.reportyVelocity = function () {
+        if (this.physicsBody && this.physicsMode === "dynamic") {
+            return this.physicsBody.velocity[1];
+        } else {
+            return this.physicsYVelocity || 0;
+        }
+    };
+    
+    SpriteMorph.prototype.changeVelocity = function (dx, dy) {
+        this.setVelocity(this.reportxVelocity() + (+dx || 0), this.reportyVelocity() + (+dy || 0));
+    };
+    
+    SpriteMorph.prototype.changeXVelocity = function (delta) {
+        this.setXVelocity(this.reportxVelocity() + (+delta || 0));
+    };
+    
+    SpriteMorph.prototype.changeYVelocity = function (delta) {
+        this.setYVelocity(this.reportyVelocity() + (+delta || 0));
+    };
+    
+    SpriteMorph.prototype.setAcceleration = function (ax, ay) {
+        this.physicsXAcceleration = +ax;
+        this.physicsYAcceleration = +ay;
+    };
+    
+    SpriteMorph.prototype.setXAcceleration = function (a) {
+        this.physicsXAcceleration = +a;
+    };
+    
+    SpriteMorph.prototype.setYAcceleration = function (a) {
+        this.physicsYAcceleration = +a;
+    };
+    
+    SpriteMorph.prototype.reportxAcceleration = function () {
+        return this.physicsXAcceleration || 0;
+    };
+    
+    SpriteMorph.prototype.reportyAcceleration = function () {
+        return this.physicsYAcceleration || 0;
+    };
     StageMorph.prototype.phyInit = StageMorph.prototype.init;
     StageMorph.prototype.init = function (globals) {
         this.phyInit(globals);
@@ -281,11 +452,6 @@
         this.testBlockvalue = 0;
     };
     
-    // SpriteMorph.prototype.SimulationTimereport = function () {
-    //     var stage = this.getStage();
-    //     return (stage && stage.SimulationTimereport()) || 0;
-    // };
-
     StageMorph.prototype.phyStep = StageMorph.prototype.step;
     StageMorph.prototype.step = function () {
         this.phyStep();
@@ -302,7 +468,6 @@
         this.physicsSimulationTime = 0;
         this.physicsRunning = true;
         this.physicsLastUpdated = Date.now();
-        //this.clearGraphData();
 
         if (!norefresh) {
             var ide = this.parentThatIsA(IDE_Morph);
@@ -326,8 +491,6 @@
     StageMorph.prototype.phyFireGreenFlagEvent = StageMorph.prototype.fireGreenFlagEvent;
     StageMorph.prototype.fireGreenFlagEvent = function () {
         var r = this.phyFireGreenFlagEvent();
-        // this.physicsSimulationTime = 0;
-        // this.clearGraphData();
         return r;
     };
 
@@ -338,10 +501,7 @@
         return r;
     };
 
-    // function deltaTime () {
-    //     return this.physicsDeltaTime;
-    // }
-    StageMorph.prototype.deltaTimereport = function () {
+    StageMorph.prototype.reportdeltaTime = function () {
         return this.physicsDeltaTime;
     };
     
@@ -355,7 +515,7 @@
         
     };
     
-    StageMorph.prototype.simulationTimereport = function () {
+    StageMorph.prototype.reportsimulationTime = function () {
         return this.physicsSimulationTime;
     };
     
@@ -386,13 +546,9 @@
                     delta = 0.2;
                 }
     
-                //this.recordGraphData();
-    
                 this.physicsLastUpdated = time;
                 this.physicsDeltaTime = delta;
                 this.physicsSimulationTime += delta;
-                //this.physicsWorld.step(delta);
-                //this.updateMorphicPosition();
                 for (i = 0; i < hats.length; i++) {
                     this.threads.startProcess(hats[i], this.isThreadSafe);
                 }
@@ -455,4 +611,4 @@
     StageMorph.prototype.allHatBlocksForSimulation = SpriteMorph.prototype.allHatBlocksForSimulation;
     
     NetsBloxExtensions.register(simulationExtension);
-})();
+}

@@ -6,7 +6,7 @@
         <title>NetsBlox</title>
         <link rel="shortcut icon" href="favicon.ico">
         <script type="text/javascript">
-            var REMOTE_SERVER_URL = undefined,
+            var REMOTE_SERVER_URL = "https://physdev.c2stem.org",
                 SERVER_URL = REMOTE_SERVER_URL || window.location.origin, // connect to the remote server or fall back to the local server
                 SERVER_ADDRESS = SERVER_URL.replace(/^.*\/\//, ''),
                 CLIENT_ID = '_netsblox' + new Date().getTime(), // generate a client_id w/ low collision probability
@@ -19,6 +19,7 @@
         <script type="text/javascript" src="src/services.js"></script>
         <script type="text/javascript" src="src/morphic.js"></script>
         <script type="text/javascript" src="src/extensions.js"></script>
+        <script type="text/javascript" src="src/simulation-extension.js"></script>
         <script type="text/javascript" src="src/locale.js"></script>
         <script type="text/javascript" src="src/symbols.js"></script>
         <script type="text/javascript" src="src/widgets.js"></script>
