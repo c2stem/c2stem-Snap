@@ -1,4 +1,4 @@
-function SimulationExtension() {
+(function SimulationExtension() {
 
     SimulationExtension = function() {};
     SimulationExtension.prototype = new Extension('SimulationExtension');
@@ -507,4 +507,4 @@ function SimulationExtension() {
 
     NetsBloxExtensions.register(SimulationExtension);
 
-}
+})();

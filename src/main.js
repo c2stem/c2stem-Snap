@@ -40,7 +40,6 @@ window.onload = function () {
         });
 
     }
-    SimulationExtension();
 };
 
 function loop() {
