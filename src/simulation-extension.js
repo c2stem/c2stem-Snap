@@ -1,5 +1,5 @@
-(function SimulationExtension() {
-
+(function () {
+    var extension;
     SimulationExtension = function() {};
     SimulationExtension.prototype = new Extension('SimulationExtension');
     SimulationExtension.prototype.getMenu = () => {
@@ -48,9 +48,7 @@
                 new Extension.Palette.Block('xVelocity').withWatcherToggle(),
                 new Extension.Palette.Block('yVelocity').withWatcherToggle(),
                 new Extension.Palette.Block('xAcceleration').withWatcherToggle(),
-                new Extension.Palette.Block('yAcceleration').withWatcherToggle(),
-                Extension.Palette.BigSpace,
-                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('yAcceleration').withWatcherToggle()
                 // new Extension.Palette.Block('spriteBlock'),
             ],
             SpriteMorph
@@ -65,38 +63,16 @@
                 new Extension.Palette.Block('runSimulationSteps'),
                 Extension.Palette.Space,
                 new Extension.Palette.Block('setDeltaTime'),
-                new Extension.Palette.Block('setPhysicsXPosition'),
-                new Extension.Palette.Block('setPhysicsYPosition'),
-                new Extension.Palette.Block('setPhysicsPosition'),
-                new Extension.Palette.Block('changePhysicsXPosition'),
-                new Extension.Palette.Block('changePhysicsYPosition'),
-                new Extension.Palette.Block('changePhysicsPosition'),
-                new Extension.Palette.Block('setXVelocity'),
-                new Extension.Palette.Block('setYVelocity'),
-                new Extension.Palette.Block('setVelocity'),
-                new Extension.Palette.Block('changeXVelocity'),
-                new Extension.Palette.Block('changeYVelocity'),
-                new Extension.Palette.Block('changeVelocity'),
-                new Extension.Palette.Block('setXAcceleration'),
-                new Extension.Palette.Block('setYAcceleration'),
-                new Extension.Palette.Block('setAcceleration'),
                 Extension.Palette.BigSpace,
                 new Extension.Palette.Block('simulationTime').withWatcherToggle(),
-                new Extension.Palette.Block('deltaTime').withWatcherToggle(),
-                new Extension.Palette.Block('physicsXPosition').withWatcherToggle(),
-                new Extension.Palette.Block('physicsYPosition').withWatcherToggle(),
-                new Extension.Palette.Block('xVelocity').withWatcherToggle(),
-                new Extension.Palette.Block('yVelocity').withWatcherToggle(),
-                new Extension.Palette.Block('xAcceleration').withWatcherToggle(),
-                new Extension.Palette.Block('yAcceleration').withWatcherToggle(),
-                
+                new Extension.Palette.Block('deltaTime').withWatcherToggle()
             ],
             StageMorph
         ),
     ];
 
     SimulationExtension.prototype.getBlocks =  function() {
-        const extension = this;
+        extension = this;
         this.physicsRunning = false;
         this.physicsSimulationTime = 0;
         this.physicsLastUpdated = null;
@@ -118,7 +94,7 @@
             'time in s',
             [],
             () => (extension.physicsSimulationTime)
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'deltaTime',
             'reporter',
@@ -126,7 +102,7 @@
             '\u2206t in s',
             [],
             () => (extension.physicsDeltaTime)
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'setDeltaTime',
             'command',
@@ -211,13 +187,9 @@
             function() {
                 var s = extension.physicsScale;
                 var o = extension.physicsOrigin;
-                if(this instanceof(SpriteMorph)){
-                    return (this.xPosition() - o.x) / s;        
-                }else{
-                    return (this.receiver.xPosition() - o.x) / s;
-                }
+                return (this.xPosition() - o.x) / s; 
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'physicsYPosition',
             'reporter',
@@ -227,13 +199,9 @@
             function() {
                 var s = extension.physicsScale;
                 var o = extension.physicsOrigin;
-                if(this instanceof(SpriteMorph)){
-                    return (this.yPosition() - o.y) / s;        
-                }else{
-                    return (this.receiver.yPosition() - o.y) / s;
-                }
+                return (this.yPosition() - o.y) / s; 
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'changePhysicsXPosition',
             'command',
@@ -275,7 +243,7 @@
             'change position by x: %n y: %n m',
             [0, 0],
             function(dx, dy){
-                this.setPhysicsPosition(this.physicsXPosition() + dx, this.physicsYPosition() + dy);
+                this.setPhysicsPosition(this.receiver.physicsXPosition() + dx, this.receiver.physicsYPosition() + dy);
             }
         ),
         new Extension.Block(
@@ -319,7 +287,7 @@
                     return extension.physicsXVelocity || 0;
                 }
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'yVelocity',
             'reporter',
@@ -333,7 +301,7 @@
                     return extension.physicsYVelocity || 0;
                 }
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'changeXVelocity',
             'command',
@@ -341,7 +309,7 @@
             'change x velocity to %n m/s',
             [0],
             function(delta) {
-                this.setXVelocity(this.reportxVelocity() + (+delta || 0));
+                this.setXVelocity(this.receiver.xVelocity() + (+delta || 0));
             }
         ),
         new Extension.Block(
@@ -351,7 +319,7 @@
             'change y velocity to %n m/s',
             [0],
             function(delta) {
-                this.setYVelocity(this.reportyVelocity() + (+delta || 0));
+                this.setYVelocity(this.receiver.yVelocity() + (+delta || 0));
             }
         ),
         new Extension.Block(
@@ -377,7 +345,7 @@
             'change velocity to x: %n y: %n m/s',
             [0, 0],
             function(dx, dy){
-                this.setVelocity(this.reportxVelocity() + (+dx || 0), this.reportyVelocity() + (+dy || 0));
+                this.setVelocity(this.receiver.xVelocity() + (+dx || 0), this.receiver.yVelocity() + (+dy || 0));
             }
         ),
         new Extension.Block(
@@ -409,27 +377,26 @@
             function() {
                 return extension.physicsXAcceleration || 0;
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'yAcceleration',
             'reporter',
             'Simulation',
-            'y velocity in m/s',
+            'y acceleration in m/s\u00b2',
             [],
             function() {
                 return extension.physicsYAcceleration || 0;
             }
-        ),
+        ).for(StageMorph, SpriteMorph),
         new Extension.Block(
             'setAcceleration',
             'command',
             'Simulation',
             'set acceleration to x: %n y: %n m/s\u00b2',
             [0, 0],
-            function(x, y){
-                var s = extension.physicsScale;
-                var o = extension.physicsOrigin;
-                this.receiver.gotoXY(+x * s + o.x, +y * s + o.y);
+            function(ax, ay){
+                extension.physicsXAcceleration = +ax;
+                extension.physicsYAcceleration = +ay;
             }
         ),
         new Extension.Block(
@@ -459,13 +426,11 @@
     };
 
     StageMorph.prototype.isSimulationRunning = function () {
-        return NetsBloxExtensions.registry[0].physicsRunning;
+        return extension.physicsRunning;        
     };
 
     StageMorph.prototype.simulationStep = function () {
-        var i, delta, time, 
-        extension = NetsBloxExtensions.registry[0];
-        // sprites = this.children.filter(child => child instanceof SpriteMorph)[0],
+        var i, delta, time; 
         hats = this.allHatBlocksForSimulation();
         this.children.forEach(function (morph) {
             if (morph.allHatBlocksForSimulation) {
@@ -503,6 +468,10 @@
         }
     
         return true;
+    };
+
+    StageMorph.prototype.fireStopAllEvent = function () {
+        extension.physicsRunning = false;
     };
 
     NetsBloxExtensions.register(SimulationExtension);
