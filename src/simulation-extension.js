@@ -256,7 +256,7 @@
                 if (extension.physicsBody && extension.physicsMode === "dynamic") {
                     extension.physicsBody.velocity[0] = +v;
                 } else {
-                    extension.physicsXVelocity = +v;
+                    this.receiver.physicsXVelocity = +v;
                 }
             }
         ),
@@ -270,7 +270,7 @@
                 if (extension.physicsBody && extension.physicsMode === "dynamic") {
                     extension.physicsBody.velocity[1] = +v;
                 } else {
-                    extension.physicsYVelocity = +v;
+                    this.receiver.physicsYVelocity = +v;
                 }
             }
         ),
@@ -284,7 +284,7 @@
                 if (extension.physicsBody && extension.physicsMode === "dynamic") {
                     return extension.physicsBody.velocity[0];
                 } else {
-                    return extension.physicsXVelocity || 0;
+                    return this.physicsXVelocity || 0;
                 }
             }
         ).for(StageMorph, SpriteMorph),
@@ -298,7 +298,7 @@
                 if (extension.physicsBody && extension.physicsMode === "dynamic") {
                     return extension.physicsBody.velocity[1];
                 } else {
-                    return extension.physicsYVelocity || 0;
+                    return this.physicsYVelocity || 0;
                 }
             }
         ).for(StageMorph, SpriteMorph),
@@ -333,8 +333,8 @@
                     extension.physicsBody.velocity[0] = +vx;
                     extension.physicsBody.velocity[1] = +vy;
                 } else {
-                    extension.physicsXVelocity = +vx;
-                    extension.physicsYVelocity = +vy;
+                    this.receiver.physicsXVelocity = +vx;
+                    this.receiver.physicsYVelocity = +vy;
                 }
             }
         ),
@@ -355,7 +355,7 @@
             'set x acceleration to %n m/s\u00b2',
             [0],
             function(a) {
-                extension.physicsXAcceleration = +a;
+                this.receiver.physicsXAcceleration = +a;
             }
         ),
         new Extension.Block(
@@ -365,7 +365,7 @@
             'set y acceleration to %n m/s\u00b2',
             [0],
             function(a) {
-                extension.physicsYAcceleration = +a;
+                this.receiver.physicsYAcceleration = +a;
             }
         ),
         new Extension.Block(
@@ -375,7 +375,7 @@
             'x acceleration in m/s\u00b2',
             [],
             function() {
-                return extension.physicsXAcceleration || 0;
+                return this.physicsXAcceleration || 0;
             }
         ).for(StageMorph, SpriteMorph),
         new Extension.Block(
@@ -385,7 +385,7 @@
             'y acceleration in m/s\u00b2',
             [],
             function() {
-                return extension.physicsYAcceleration || 0;
+                return this.physicsYAcceleration || 0;
             }
         ).for(StageMorph, SpriteMorph),
         new Extension.Block(
@@ -395,8 +395,8 @@
             'set acceleration to x: %n y: %n m/s\u00b2',
             [0, 0],
             function(ax, ay){
-                extension.physicsXAcceleration = +ax;
-                extension.physicsYAcceleration = +ay;
+                this.receiver.physicsXAcceleration = +ax;
+                this.receiver.physicsYAcceleration = +ay;
             }
         ),
         new Extension.Block(
