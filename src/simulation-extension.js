@@ -431,18 +431,8 @@
 
     StageMorph.prototype.simulationStep = function () {
         var i, delta, time; 
-        hats = this.allHatBlocksForSimulation();
-        this.children.forEach(function (morph) {
-            if (morph.allHatBlocksForSimulation) {
-                hats = hats.concat(morph.allHatBlocksForSimulation());
-            }
-        });
-    
-        for (i = 0; i < hats.length; i++) {
-            if (this.threads.findProcess(hats[i])) {
-                return false; // step is still running
-            }
-        }
+
+        const hatsAndRecvrs = this.children.concat(this).filter(morph => morph.allHatBlocksForSimulation).map(morph => [morph, morph.allHatBlocksForSimulation()])
     
         time = Date.now(); // in milliseconds
         if (extension.physicsLastUpdated) {
@@ -455,13 +445,14 @@
                     delta = 0.2;
                 }
 
-    
                 extension.physicsLastUpdated = time;
                 extension.physicsDeltaTime = delta;
                 extension.physicsSimulationTime += delta;
-                for (i = 0; i < hats.length; i++) {
-                    this.threads.startProcess(hats[i], this.isThreadSafe);
-                }
+                
+                hatsAndRecvrs.forEach(pair => {
+                    const [rcvr, hats] = pair;
+                    hats.forEach(hat => this.threads.startProcess(hat, rcvr, this.isThreadSafe));  
+                });
             }
         } else {
             extension.physicsLastUpdated = time;
@@ -470,7 +461,15 @@
         return true;
     };
 
+    StageMorph.prototype.phyFireGreenFlagEvent = StageMorph.prototype.fireGreenFlagEvent;
+    StageMorph.prototype.fireGreenFlagEvent = function () {
+      var r = this.phyFireGreenFlagEvent();
+      return r;
+    };
+
+    StageMorph.prototype.phyFireStopAllEvent = StageMorph.prototype.fireStopAllEvent;
     StageMorph.prototype.fireStopAllEvent = function () {
+        var r = this.phyFireStopAllEvent();
         extension.physicsRunning = false;
     };
 
