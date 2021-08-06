@@ -14,6 +14,10 @@
         )
     ];
 
+    /*
+    Setting up blocks for sprite and stage morph. 
+    Only the blocks created here will be visible in the block panel. 
+    */
     SimulationExtension.prototype.getPalette = () => [
         new Extension.PaletteCategory(
             'Simulation',
@@ -40,6 +44,8 @@
                 new Extension.Palette.Block('setXAcceleration'),
                 new Extension.Palette.Block('setYAcceleration'),
                 new Extension.Palette.Block('setAcceleration'),
+                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('getPhysicsAttrOf'),
                 Extension.Palette.BigSpace,
                 new Extension.Palette.Block('simulationTime').withWatcherToggle(),
                 new Extension.Palette.Block('deltaTime').withWatcherToggle(),
@@ -71,6 +77,9 @@
         ),
     ];
 
+    /*
+    Defining blocks and their functionality
+    */
     SimulationExtension.prototype.getBlocks =  function() {
         extension = this;
         this.physicsRunning = false;
@@ -400,15 +409,68 @@
             }
         ),
         new Extension.Block(
-            'spriteBlock',
-            'command',
+            'getPhysicsAttrOf',
+            'reporter',
             'Simulation',
-            'sprite-only block',
-            [],
-            () => 'This is another test.'
+            '%physics of %spr',
+            ['x position'],
+            function (attribute, name) {
+                var thisObj = this.blockReceiver(),
+                  thatObj;
+              
+                if (thisObj) {
+                  this.assertAlive(thisObj);
+                  thatObj = this.getOtherObject(name, thisObj);
+                  if (thatObj) {
+                    this.assertAlive(thatObj);
+                    switch (this.inputOption(attribute)) {
+                      case 'mass':
+                        return thatObj.mass ? thatObj.mass() : '';
+                      case 'x position':
+                        return thatObj.physicsXPosition ? thatObj.physicsXPosition() : '';
+                      case 'y position':
+                        return thatObj.physicsYPosition ? thatObj.physicsYPosition() : '';
+                      case 'x velocity':
+                        return thatObj.xVelocity ? thatObj.xVelocity() : '';
+                      case 'y velocity':
+                        return thatObj.yVelocity ? thatObj.yVelocity() : '';
+                      case 'x acceleration':
+                        return thatObj.xAcceleration ? thatObj.xAcceleration() : '';
+                      case 'y acceleration':
+                        return thatObj.yAcceleration ? thatObj.yAcceleration() : '';
+                    }
+                  }
+                }
+              
+                return '';
+            }
         )]
         return newBlockList;
     };
+
+    // Setting up custom label for drop doen block types
+    SimulationExtension.prototype.getLabelParts = () => [
+        new Extension.LabelPart(
+            'physics',
+            () => {
+                const part = new InputSlotMorph(
+                    null, // text
+                    false, // non-numeric
+                    {
+                        'x position in m': ['x position'],
+                        'y position in m': ['y position'],
+                        'x velocity in m/s': ['x velocity'],
+                        'y velocity in m/s': ['y velocity'],
+                        'x acceleration in m/s': ['x acceleration'],
+                        'y acceleration in m/s': ['y acceleration']
+                    },
+                    true
+                );
+                part.setContents(['x position']);
+                return part;
+            }
+        )
+    ];
 
     SpriteMorph.prototype.allHatBlocksForSimulation = function () {
         return this.scripts.children.filter(function (morph) {
