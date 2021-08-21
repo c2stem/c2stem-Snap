@@ -23,38 +23,46 @@
             'Simulation',
             [
                 new Extension.Palette.Block('doSimulationStep'),
-                Extension.Palette.Space,
                 new Extension.Palette.Block('startSimulation'),
                 new Extension.Palette.Block('stopSimulation'),
                 new Extension.Palette.Block('runSimulationSteps'),
-                Extension.Palette.Space,
-                new Extension.Palette.Block('setDeltaTime'),
-                new Extension.Palette.Block('setPhysicsXPosition'),
-                new Extension.Palette.Block('setPhysicsYPosition'),
-                new Extension.Palette.Block('setPhysicsPosition'),
-                new Extension.Palette.Block('changePhysicsXPosition'),
-                new Extension.Palette.Block('changePhysicsYPosition'),
-                new Extension.Palette.Block('changePhysicsPosition'),
-                new Extension.Palette.Block('setXVelocity'),
-                new Extension.Palette.Block('setYVelocity'),
-                new Extension.Palette.Block('setVelocity'),
-                new Extension.Palette.Block('changeXVelocity'),
-                new Extension.Palette.Block('changeYVelocity'),
-                new Extension.Palette.Block('changeVelocity'),
-                new Extension.Palette.Block('setXAcceleration'),
-                new Extension.Palette.Block('setYAcceleration'),
-                new Extension.Palette.Block('setAcceleration'),
-                Extension.Palette.BigSpace,
-                new Extension.Palette.Block('getPhysicsAttrOf'),
                 Extension.Palette.BigSpace,
                 new Extension.Palette.Block('simulationTime').withWatcherToggle(),
                 new Extension.Palette.Block('deltaTime').withWatcherToggle(),
+                new Extension.Palette.Block('setDeltaTime'),
+                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('setPhysicsPosition'),
+                new Extension.Palette.Block('setPhysicsXPosition'),
+                new Extension.Palette.Block('setPhysicsYPosition'),
+                new Extension.Palette.Block('changePhysicsPosition'),
+                new Extension.Palette.Block('changePhysicsXPosition'),
+                new Extension.Palette.Block('changePhysicsYPosition'),
                 new Extension.Palette.Block('physicsXPosition').withWatcherToggle(),
                 new Extension.Palette.Block('physicsYPosition').withWatcherToggle(),
+                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('setVelocity'),
+                new Extension.Palette.Block('setXVelocity'),
+                new Extension.Palette.Block('setYVelocity'),
+                new Extension.Palette.Block('changeVelocity'),
+                new Extension.Palette.Block('changeXVelocity'),
+                new Extension.Palette.Block('changeYVelocity'),
                 new Extension.Palette.Block('xVelocity').withWatcherToggle(),
                 new Extension.Palette.Block('yVelocity').withWatcherToggle(),
+                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('setXAcceleration'),
+                new Extension.Palette.Block('setYAcceleration'),
+                new Extension.Palette.Block('setAcceleration'),
                 new Extension.Palette.Block('xAcceleration').withWatcherToggle(),
-                new Extension.Palette.Block('yAcceleration').withWatcherToggle()
+                new Extension.Palette.Block('yAcceleration').withWatcherToggle(),
+                Extension.Palette.BigSpace,
+                new Extension.Palette.Block('getPhysicsAttrOf'),
+                Extension.Palette.BigSpace,       
+                new Extension.Palette.Block('phySetHeading'),
+                new Extension.Palette.Block('phyChangeHeading'),
+                new Extension.Palette.Block('phyHeading').withWatcherToggle(),
+                Extension.Palette.BigSpace, 
+                new Extension.Palette.Block('gravity')
+                
                 // new Extension.Palette.Block('spriteBlock'),
             ],
             SpriteMorph
@@ -94,6 +102,7 @@
         this.physicsMode = "";
         this.physicsBody = null;
         this.physicsMass = 100;
+        this.gravity = -9.8;
 
         const newBlockList = [
         new Extension.Block(
@@ -315,7 +324,7 @@
             'changeXVelocity',
             'command',
             'Simulation',
-            'change x velocity to %n m/s',
+            'change x velocity by %n m/s',
             [0],
             function(delta) {
                 this.setXVelocity(this.receiver.xVelocity() + (+delta || 0));
@@ -325,7 +334,7 @@
             'changeYVelocity',
             'command',
             'Simulation',
-            'change y velocity to %n m/s',
+            'change y velocity by %n m/s',
             [0],
             function(delta) {
                 this.setYVelocity(this.receiver.yVelocity() + (+delta || 0));
@@ -351,7 +360,7 @@
             'changeVelocity',
             'command',
             'Simulation',
-            'change velocity to x: %n y: %n m/s',
+            'change velocity by x: %n y: %n m/s',
             [0, 0],
             function(dx, dy){
                 this.setVelocity(this.receiver.xVelocity() + (+dx || 0), this.receiver.yVelocity() + (+dy || 0));
@@ -407,6 +416,46 @@
                 this.receiver.physicsXAcceleration = +ax;
                 this.receiver.physicsYAcceleration = +ay;
             }
+        ),
+        new Extension.Block(
+            'phySetHeading',
+            'command',
+            'Simulation',
+            'set heading to %n degrees',
+            [0],
+            function(deg){
+                //set heading to degrees
+                this.setHeading(-deg+90-extension.physicsAxisAngle)
+            }
+        ),
+        new Extension.Block(
+            'phyHeading',
+            'reporter',
+            'Simulation',
+            'heading in degrees',
+            [],
+            function(){
+                var angle = (-this.direction() + 90 - extension.physicsAxisAngle) % 360;
+                return angle >= 0 ? angle : angle + 360;
+            }
+        ).for(StageMorph, SpriteMorph),
+        new Extension.Block(
+            'phyChangeHeading',
+            'command',
+            'Simulation',
+            'change heading by %n degrees',
+            [0],
+            function(deg){
+                 this.phySetHeading(this.receiver.heading() + (+deg || 0));
+            }
+        ),
+        new Extension.Block(
+            'gravity',
+            'reporter',
+            'Simulation',
+            'gravity in m/s\u00b2',
+            [],
+            () => (extension.gravity)
         ),
         new Extension.Block(
             'getPhysicsAttrOf',
