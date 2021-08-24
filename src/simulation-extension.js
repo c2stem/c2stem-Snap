@@ -104,6 +104,10 @@
         this.physicsMass = 100;
         this.gravity = -9.8;
 
+        // Graph
+        this.graphTable = new Table(0, 0);
+        this.graphWatchers = [];
+
         const newBlockList = [
         new Extension.Block(
             'simulationTime',
@@ -582,6 +586,392 @@
     StageMorph.prototype.fireStopAllEvent = function () {
         var r = this.phyFireStopAllEvent();
         extension.physicsRunning = false;
+    };
+
+    // Create buttons on Coral Bar.
+    IDE_Morph.prototype.createCoralBar = IDE_Morph.prototype.createCorralBar;
+    IDE_Morph.prototype.createCorralBar = function(){
+        this.createCoralBar();
+        var padding = 5,
+        graphbutton,
+        tablebutton,
+        colors = MorphicPreferences.isFlat ? this.tabColors
+        : [
+            this.groupColor,
+            this.frameColor.darker(50),
+            this.frameColor.darker(50)
+        ],
+        
+        leftX = this.getCorralBarLeftX(this.corralBar);
+
+        // Graph button
+        graphbutton = new PushButtonMorph(
+            this,
+            "openGraphDialog",
+            new SymbolMorph("graph", 15)
+        );
+        graphbutton.corner = 12;
+        graphbutton.color = colors[0];
+        graphbutton.highlightColor = colors[1];
+        graphbutton.pressColor = colors[2];
+        graphbutton.labelMinExtent = new Point(36, 18);
+        graphbutton.padding = 0;
+        graphbutton.labelShadowOffset = new Point(-1, -1);
+        graphbutton.labelShadowColor = colors[1];
+        graphbutton.labelColor = this.buttonLabelColor;
+        graphbutton.contrast = this.buttonContrast;
+        graphbutton.hint = "graph the simulation data";
+        graphbutton.fixLayout();
+        graphbutton.setCenter(this.corralBar.center());
+        graphbutton.setLeft(leftX+ padding);
+        this.corralBar.add(graphbutton);
+
+        leftX = this.getCorralBarLeftX(this.corralBar);
+
+        // Table button
+        tablebutton = new PushButtonMorph(
+            this,
+            "openTableDialog",
+            new SymbolMorph("table", 16)
+        );
+        tablebutton.corner = 12;
+        tablebutton.color = colors[0];
+        tablebutton.highlightColor = colors[1];
+        tablebutton.pressColor = colors[2];
+        tablebutton.labelMinExtent = new Point(36, 18);
+        tablebutton.padding = 0;
+        tablebutton.labelShadowOffset = new Point(-1, -1);
+        tablebutton.labelShadowColor = colors[1];
+        tablebutton.labelColor = this.buttonLabelColor;
+        tablebutton.contrast = this.buttonContrast;
+        tablebutton.hint = "table view of simulation data";
+        tablebutton.fixLayout();
+        tablebutton.setCenter(this.corralBar.center());
+        tablebutton.setLeft(leftX + padding);
+        this.corralBar.add(tablebutton);
+
+    }
+
+    // end position of a button 
+    IDE_Morph.prototype.getCorralBarLeftX= function(corralBar) {
+        lastButton = corralBar.children[this.corralBar.children.length -1],
+        lastButtonEnd = lastButton.bounds["corner"].x;
+        return lastButtonEnd;
+    }
+
+    // render symbols for buttons
+    SymbolMorph.prototype.superRenderShape = SymbolMorph.prototype.renderShape;
+    SymbolMorph.prototype.renderShape = function (ctx, aColor) {
+        try{
+            this.superRenderShape(ctx, aColor);
+        }catch(err){
+            if (this.name == 'graph'){
+                this.renderSymbolGraph(ctx, aColor)
+            }else if(this.name == 'table'){
+                this.renderSymbolTable(ctx, aColor)
+            }
+        }
+
+    }
+    SymbolMorph.prototype.renderSymbolGraph = function (ctx, color) {
+        var w = this.symbolWidth(),
+            h = this.size,
+            l = Math.max(w * 0.05, 0.5);
+    
+        ctx.fillStyle = color.toString();
+        ctx.strokeStyle = ctx.fillStyle;
+    
+        ctx.lineWidth = l;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.1, h * 0.0);
+        ctx.lineTo(w * 0.1, h * 0.9);
+        ctx.lineTo(w * 1.0, h * 0.9);
+        ctx.moveTo(w * 0.0, h * 0.2);
+        ctx.lineTo(w * 0.1, h * 0.0);
+        ctx.lineTo(w * 0.2, h * 0.2);
+        ctx.moveTo(w * 0.8, h * 0.8);
+        ctx.lineTo(w * 1.0, h * 0.9);
+        ctx.lineTo(w * 0.8, h * 1.0);
+        ctx.stroke();
+    
+        ctx.lineWidth = 2 * l;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.2, h * 0.8);
+        ctx.lineTo(w * 0.4, h * 0.2);
+        ctx.lineTo(w * 0.6, h * 0.6);
+        ctx.lineTo(w * 0.8, h * 0.1);
+        ctx.lineTo(w * 0.9, h * 0.4);
+        ctx.stroke();
+    
+    }
+
+    SymbolMorph.prototype.renderSymbolTable = function (ctx, color) {
+        // answer a canvas showing an atom
+        var w = this.symbolWidth(),
+            h = this.size;
+    
+        ctx.fillStyle = color.toString();
+        ctx.strokeStyle = ctx.fillStyle;
+        ctx.lineWidth = Math.max(w * 0.05, 0.5);
+        ctx.beginPath();
+        for (var i = 0.1; i < 1.0; i += 0.2) {
+            ctx.moveTo(0.1 * w, i * h);
+            ctx.lineTo(0.9 * w, i * h);
+            ctx.moveTo(i * w, 0.1 * h);
+            ctx.lineTo(i * w, 0.9 * h);
+        }
+        ctx.stroke();
+    
+    }
+
+    // Graph
+     // ------- GraphingMorph -------
+
+     function GraphMorph(table) {
+        this.init(table);
+    };
+
+    GraphMorph.prototype = new Morph();
+    GraphMorph.prototype.constructor = GraphMorph;
+    GraphMorph.uber = Morph.prototype;
+
+    GraphMorph.prototype.init = function (table) {
+    GraphMorph.uber.init.call(this);
+        this.table = table;
+    };
+
+    GraphMorph.prototype.colors = ['rgb(255,0,0)', 'rgb(0,255,0)', 'rgb(0,0,255)',
+        'rgb(255,255,0)', 'rgb(255,0,255)', 'rgb(0,255,255)', 'rgb(0,0,0)'
+    ];
+
+    GraphMorph.prototype.drawNew = function () {
+        if (!this.table) {
+            return;
+        }
+
+        var pixelRatioHack = window.devicePixelRatio || 1.0;
+        
+        if (this.img) {
+            this.img.width = this.width() / pixelRatioHack;
+            this.img.height = this.height() / pixelRatioHack;
+        } else {
+            this.img = this.getImage();
+        }
+        var ctx = this.img.getContext('2d');
+
+
+        var labels = [];
+        for (var r = 1; r < this.table.rows(); r++) {
+            var v = +this.table.get(1, r);
+            labels.push(v.toFixed(3));
+        }
+
+        var datasets = [];
+        for (var c = 2; c <= this.table.cols(); c++) {
+            var data = [],
+            color = this.colors[c - 2 % this.colors.length];
+
+            for (var r = 1; r < this.table.rows(); r++) {
+            data.push(this.table.get(c, r));
+            }
+
+            datasets.push({
+            label: this.table.get(c, 0),
+            borderColor: color,
+            backgroundColor: color,
+            data: data,
+            borderWidth: 1,
+            pointRadius: 2
+            });
+        }
+
+        if(this.chart){
+            this.chart.destroy();
+        }
+
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: false,
+                animation: {
+                    duration: 0,
+                },
+                hover: {
+                    animationDuration: 0,
+                },
+                responsiveAnimationDuration: 0,
+                elements: {
+                    line: {
+                        fill: false,
+                        tension: 0
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            autoSkipPadding: 20
+                        },
+                        title: {
+                            display: true,
+                            align: 'center',
+                            text: 'Time in s'
+                        }
+                    }
+                }
+            }
+        });
+
+    };
+
+     // ------- GraphDialogMorph -------
+     GraphDialogMorph.prototype = new DialogBoxMorph();
+     GraphDialogMorph.prototype.constructor = GraphDialogMorph;
+     GraphDialogMorph.uber = DialogBoxMorph.prototype;
+ 
+     function GraphDialogMorph(table, mode) {
+         this.init(table, mode);
+     };
+ 
+     GraphDialogMorph.prototype.init = function (table, mode) {
+         // additional properties:
+         this.handle = null;
+         this.table = table;
+         this.mode = mode;
+ 
+         // initialize inherited properties:
+         GraphDialogMorph.uber.init.call(this);
+ 
+         // override inherited properites:
+         this.labelString = 'Simulation Data';
+         this.createLabel();
+ 
+         this.buildContents();
+     };
+ 
+     GraphDialogMorph.prototype.buildContents = function () {
+         if (this.mode === 'table') {
+             this.tableView = new TableMorph(
+             this.table,
+             null, // scrollBarSize
+             null, // extent
+             null, // startRow
+             null, // startCol
+             null, // globalColWidth
+             null, // colWidths
+             null, // rowHeight
+             null, // colLabelHeight
+             null // padding
+             );
+             this.addBody(new TableFrameMorph(this.tableView, true));
+         } else {
+             this.addBody(new GraphMorph(this.table));
+         }
+         this.addButton('ok', 'Close');
+         this.addButton('exportTable', 'Export');
+         this.addButton('refresh', 'Refresh');
+     };
+ 
+     GraphDialogMorph.prototype.exportTable = function () {
+         if (this.parent instanceof WorldMorph) {
+             var ide = this.parent.children[0];
+             ide.saveFileAs(this.table.toCSV(), 'text/csv;chartset=utf-8', 'simdata');
+             this.ok();
+         }
+     };
+ 
+     GraphDialogMorph.prototype.setInitialDimensions = function () {
+         var world = this.world(),
+             mex = world.extent().subtract(new Point(this.padding, this.padding)),
+             th = fontHeight(this.titleFontSize) + this.titlePadding * 3, // hm...
+             bh = this.buttons.height();
+         this.setExtent(new Point(300, 300).min(mex));
+         this.setCenter(this.world().center());
+     };
+ 
+     GraphDialogMorph.prototype.popUp = function (world) {
+         if (world) {
+             GraphDialogMorph.uber.popUp.call(this, world);
+             if (this.handle) {
+                 this.handle.destroy();
+             } else {
+                 this.setInitialDimensions();
+             }
+             this.handle = new HandleMorph(
+                 this,
+                 280,
+                 250,
+                 this.corner,
+                 this.corner
+             );
+             this.refresh();
+         }
+     };
+ 
+     GraphDialogMorph.prototype.fixLayout = BlockEditorMorph.prototype.fixLayout;
+ 
+     GraphDialogMorph.prototype.refresh = function () {
+         if (this.body instanceof TableFrameMorph) {
+             this.body.tableMorph.fixLayout();
+         } else if (this.body instanceof GraphMorph) {
+             this.body.drawNew();
+         }
+     };
+
+     // Graph IDE morph
+    IDE_Morph.prototype.openGraphDialog = function () {
+        if (!this.graphDialog) {
+            this.graphDialog = new GraphDialogMorph(extension.graphTable);
+        }
+        
+        this.graphDialog.popUp(this.world());
+    };
+
+    // ------- Table -------
+
+    Table.prototype.clear = function (cols, rows) {
+        this.colCount = +cols;
+        this.rowCount = +rows;
+        this.colNames = [];
+        this.rowNames = [];
+        this.contents = new Array(+rows);
+        for (var i = 0; i < rows; i += 1) {
+            this.contents[i] = new Array(+cols);
+        }
+        this.lastChanged = Date.now();
+    };
+
+    Table.prototype.toCSV = function () {
+        var data = this.colNames.join(',') + '\n';
+        for (var i = 0; i < this.contents.length; i++) {
+            data += this.contents[i].join(',') + '\n';
+        }
+        return data;
+    };
+
+    // Table IDE Morph 
+    IDE_Morph.prototype.openTableDialog = function () {
+        if (!this.tableDialog) {
+            this.tableDialog = new GraphDialogMorph(extension.graphTable, 'table');
+        }
+        
+        this.tableDialog.popUp(this.world());
+    };
+
+    TableMorph.prototype.step = function () {
+        if (this.dragAnchor) {
+            this.shiftCells(this.world().hand.position());
+        } else if (this.resizeAnchor) {
+            this.resizeCells(this.world().hand.position());
+        }
+        
+        if (this.wantsUpdate) {
+            this.update(); // disable automatic refresh
+        }
     };
 
     NetsBloxExtensions.register(SimulationExtension);
