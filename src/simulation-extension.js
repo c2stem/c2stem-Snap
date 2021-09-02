@@ -157,6 +157,7 @@
                 extension.physicsSimulationTime = 0;
                 extension.physicsRunning = true;
                 extension.physicsLastUpdated = Date.now();
+                this.receiver.parent.clearGraphData();
             }
         ),
         new Extension.Block(
@@ -560,6 +561,8 @@
                     delta = 0.2;
                 }
 
+                this.recordGraphData();
+
                 extension.physicsLastUpdated = time;
                 extension.physicsDeltaTime = delta;
                 extension.physicsSimulationTime += delta;
@@ -586,6 +589,58 @@
     StageMorph.prototype.fireStopAllEvent = function () {
         var r = this.phyFireStopAllEvent();
         extension.physicsRunning = false;
+    };
+
+    //Graph 
+    StageMorph.prototype.graphData = function () {
+        return extension.graphTable.toList();
+    };
+    
+    StageMorph.prototype.refreshGraphViews = function () {
+        var ide = this.parentThatIsA(IDE_Morph);
+        if (ide && ide.graphDialog) {
+            ide.graphDialog.refresh();
+        }
+        if (ide && ide.tableDialog) {
+            ide.tableDialog.refresh();
+        }
+    };
+    
+    StageMorph.prototype.clearGraphData = function () {
+        extension.graphWatchers = this.watchers().filter(function (w) {
+            return w.isVisible && !w.isTemporary();
+        });
+        
+        this.graphChanged = Date.now();
+        extension.graphTable.clear(1 + extension.graphWatchers.length, 0);
+        extension.graphTable.setColNames(["Time in s"].concat(extension.graphWatchers.map(
+            function (w) {
+            return w.objName + w.labelText;
+            })));
+        
+        this.refreshGraphViews();
+    };
+    
+    StageMorph.prototype.recordGraphData = function () {
+        if (extension.graphTable.rows() >= 1000) {
+            return;
+        }
+        
+        extension.graphTable.addRow([extension.physicsSimulationTime].concat(extension.graphWatchers.map(
+            function (w) {
+            if (w.target instanceof VariableFrame) {
+                var v = w.target.vars[w.getter];
+                return v ? v.value : NaN;
+            } else {
+                return w.target[w.getter]();
+            }
+            })));
+        
+        var t = Date.now();
+        if (t - this.graphChanged >= 500) {
+            this.graphChanged = t;
+            this.refreshGraphViews();
+        }
     };
 
     // Create buttons on Coral Bar.
@@ -744,21 +799,25 @@
         'rgb(255,255,0)', 'rgb(255,0,255)', 'rgb(0,255,255)', 'rgb(0,0,0)'
     ];
 
-    GraphMorph.prototype.drawNew = function () {
-        if (!this.table) {
-            return;
-        }
+    GraphMorph.prototype.superRender = Morph.prototype.render;
+    GraphMorph.prototype.render = function (ctx) {
 
         var pixelRatioHack = window.devicePixelRatio || 1.0;
-        
-        if (this.img) {
-            this.img.width = this.width() / pixelRatioHack;
-            this.img.height = this.height() / pixelRatioHack;
-        } else {
-            this.img = this.getImage();
-        }
-        var ctx = this.img.getContext('2d');
 
+        if (ctx.canvas.id == "world"){
+            if(this.img){
+                this.img.width = this.width() / pixelRatioHack;
+                this.img.height = this.height() / pixelRatioHack;
+                var ctx = this.img.getContext('2d');
+            }else{
+                return;
+            }
+            
+        }
+        this.superRender(ctx);
+        if (!this.table) {
+            return;
+        }        
 
         var labels = [];
         for (var r = 1; r < this.table.rows(); r++) {
@@ -788,7 +847,7 @@
         if(this.chart){
             this.chart.destroy();
         }
-
+        
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -797,21 +856,9 @@
             },
             options: {
                 responsive: false,
-                animation: {
-                    duration: 0,
-                },
-                hover: {
-                    animationDuration: 0,
-                },
-                responsiveAnimationDuration: 0,
-                elements: {
-                    line: {
-                        fill: false,
-                        tension: 0
-                    }
-                },
                 scales: {
                     x: {
+                        display: true,
                         ticks: {
                             autoSkip: true,
                             autoSkipPadding: 20
@@ -918,7 +965,9 @@
          if (this.body instanceof TableFrameMorph) {
              this.body.tableMorph.fixLayout();
          } else if (this.body instanceof GraphMorph) {
-             this.body.drawNew();
+            this.body.img = this.body.getImage();
+            this.body.render(this.body.img.getContext('2d'));
+            this.body.changed();
          }
      };
 
@@ -971,6 +1020,62 @@
         
         if (this.wantsUpdate) {
             this.update(); // disable automatic refresh
+        }
+    };
+
+    // hide code
+    // ------- ScriptsMorph -------
+
+    ScriptsMorph.prototype.hasHiddenCode = function () {
+        return this.children.some(function (block) {
+            return block.isHiddenBlock;
+        });
+    };
+  
+    ScriptsMorph.prototype.showHiddenCode = function () {
+        this.children.forEach(function (block) {
+            if (block.unhideBlock && block.isHiddenBlock) {
+                block.unhideBlock();
+            }
+        });
+    };
+  
+    // ------- HatBlockMorph -------
+  
+    HatBlockMorph.prototype.hideBlock = function () {
+        this.isHiddenBlock = true;
+        this.hide();
+    };
+    
+    HatBlockMorph.prototype.unhideBlock = function () {
+        this.isHiddenBlock = false;
+        this.phyShow();
+    };
+
+    HatBlockMorph.prototype.physicsSaveToXML = function (serializer) {
+        return this.isHiddenBlock ? '<physics hidden="true"></physics>' : '';
+    };
+    
+    HatBlockMorph.prototype.physicsLoadFromXML = function (model) {
+        if (model.attributes.hidden === 'true') {
+            this.hideBlock();
+        }
+    };
+
+    HatBlockMorph.prototype.phyShow = HatBlockMorph.prototype.show;
+    HatBlockMorph.prototype.show = function () {
+        if (this.isHiddenBlock) {
+            this.hide();
+        } else {
+            this.phyShow();
+        }
+    };
+
+    HatBlockMorph.prototype.toggleVisibility = function () {
+        if (this.isVisible) {
+            this.hide();
+        } else {
+            this.show();
         }
     };
 

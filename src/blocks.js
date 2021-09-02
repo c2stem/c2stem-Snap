@@ -3218,6 +3218,14 @@ BlockMorph.prototype.userMenu = function () {
             new Color(100, 0, 0)
         );
     }
+    if (this.topBlock().hideBlock) {
+        menu.addItem(
+            "hide code",
+            function() {
+                myself.topBlock().hideBlock();
+            }
+        );
+    }
     if (proc) {
         if (vNames.length) {
             menu.addLine();
@@ -7284,6 +7292,9 @@ ScriptsMorph.prototype.userMenu = function () {
         'save a picture\nof all scripts'
     );
     if (ide) {
+        if (this.showHiddenCode && this.hasHiddenCode()) {
+            menu.addItem('show hidden code', 'showHiddenCode');
+        }
         menu.addLine();
         if (!blockEditor && obj.exemplar) {
             addOption(
