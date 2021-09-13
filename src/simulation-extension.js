@@ -777,14 +777,14 @@
         }
         ctx.stroke();
     
-    }
+    };
 
     // Graph
-     // ------- GraphingMorph -------
+    // ------- GraphingMorph -------
 
      function GraphMorph(table) {
         this.init(table);
-    };
+    }
 
     GraphMorph.prototype = new Morph();
     GraphMorph.prototype.constructor = GraphMorph;
@@ -793,32 +793,46 @@
     GraphMorph.prototype.init = function (table) {
     GraphMorph.uber.init.call(this);
         this.table = table;
+        this.canvas = newCanvas(this.extent(), false);
     };
 
     GraphMorph.prototype.colors = ['rgb(255,0,0)', 'rgb(0,255,0)', 'rgb(0,0,255)',
         'rgb(255,255,0)', 'rgb(255,0,255)', 'rgb(0,255,255)', 'rgb(0,0,0)'
     ];
 
+    GraphMorph.prototype.getChartCanvas = function() {
+        const size = this.extent();
+        const oldSize = new Point(this.canvas.width, this.canvas.height);
+        if (!size.eq(oldSize)) {
+            this.canvas = newCanvas(size, false, this.canvas);
+        }
+        return this.canvas;
+    };
+
     GraphMorph.prototype.superRender = Morph.prototype.render;
-    GraphMorph.prototype.render = function (ctx) {
+    GraphMorph.prototype.render = function (dstCtx) {
+        if (!this.table) {
+            return;
+        }
 
         var pixelRatioHack = window.devicePixelRatio || 1.0;
 
-        if (ctx.canvas.id == "world"){
-            if(this.img){
-                this.img.width = this.width() / pixelRatioHack;
-                this.img.height = this.height() / pixelRatioHack;
-                var ctx = this.img.getContext('2d');
-            }else{
-                return;
-            }
-            
-        }
-        this.superRender(ctx);
-        if (!this.table) {
-            return;
-        }        
+        const image = this.getChartCanvas();
+        image.width = this.width() / pixelRatioHack;
+        image.height = this.height() / pixelRatioHack;
+        const sourceCtx = image.getContext('2d');
 
+
+        if(this.chart){
+            this.chart.destroy();
+        }
+        
+        const chartConfig = this.getChartJSConfig();
+        this.chart = new Chart(sourceCtx, chartConfig);
+        dstCtx.drawImage(image, 0, 0);
+    };
+
+    GraphMorph.prototype.getChartJSConfig = function () {
         var labels = [];
         for (var r = 1; r < this.table.rows(); r++) {
             var v = +this.table.get(1, r);
@@ -831,24 +845,19 @@
             color = this.colors[c - 2 % this.colors.length];
 
             for (var r = 1; r < this.table.rows(); r++) {
-            data.push(this.table.get(c, r));
+                data.push(this.table.get(c, r));
             }
 
             datasets.push({
-            label: this.table.get(c, 0),
-            borderColor: color,
-            backgroundColor: color,
-            data: data,
-            borderWidth: 1,
-            pointRadius: 2
+                label: this.table.get(c, 0),
+                borderColor: color,
+                backgroundColor: color,
+                data: data,
+                borderWidth: 1,
+                pointRadius: 2
             });
         }
-
-        if(this.chart){
-            this.chart.destroy();
-        }
-        
-        this.chart = new Chart(ctx, {
+        return {
             type: 'line',
             data: {
                 labels: labels,
@@ -871,8 +880,7 @@
                     }
                 }
             }
-        });
-
+        };
     };
 
      // ------- GraphDialogMorph -------
@@ -882,7 +890,7 @@
  
      function GraphDialogMorph(table, mode) {
          this.init(table, mode);
-     };
+     }
  
      GraphDialogMorph.prototype.init = function (table, mode) {
          // additional properties:
@@ -965,8 +973,7 @@
          if (this.body instanceof TableFrameMorph) {
              this.body.tableMorph.fixLayout();
          } else if (this.body instanceof GraphMorph) {
-            this.body.img = this.body.getImage();
-            this.body.render(this.body.img.getContext('2d'));
+            this.body.rerender();
             this.body.changed();
          }
      };
