@@ -817,6 +817,9 @@
 
         var pixelRatioHack = window.devicePixelRatio || 1.0;
 
+        // Unfortunately, rendering ChartJS directly to dstCtx results
+        // in a white screen in chrome/chromium so we will render to an
+        // intermediate canvas and then copy the image to dstCtx
         const image = this.getChartCanvas();
         image.width = this.width() / pixelRatioHack;
         image.height = this.height() / pixelRatioHack;
