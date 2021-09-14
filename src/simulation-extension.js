@@ -794,6 +794,10 @@
     GraphMorph.uber.init.call(this);
         this.table = table;
         this.canvas = newCanvas(this.extent(), false);
+        // FIXME: REMOVE THIS
+        console.log('adding child', this.canvas);
+        document.body.appendChild(this.canvas);
+        // FIXME: REMOVE THIS
     };
 
     GraphMorph.prototype.colors = ['rgb(255,0,0)', 'rgb(0,255,0)', 'rgb(0,0,255)',
@@ -804,17 +808,17 @@
         const size = this.extent();
         const oldSize = new Point(this.canvas.width, this.canvas.height);
         if (!size.eq(oldSize)) {
-            this.canvas = newCanvas(size, false, this.canvas);
+            this.canvas.width = size.x;
+            this.canvas.height = size.y;
+            //this.canvas = newCanvas(size, false, this.canvas);
         }
         return this.canvas;
     };
 
-    GraphMorph.prototype.superRender = Morph.prototype.render;
-    GraphMorph.prototype.render = function (dstCtx) {
+    GraphMorph.prototype.updateChart = function () {
         if (!this.table) {
             return;
         }
-
         var pixelRatioHack = window.devicePixelRatio || 1.0;
 
         // Unfortunately, rendering ChartJS directly to dstCtx results
@@ -823,16 +827,49 @@
         const image = this.getChartCanvas();
         image.width = this.width() / pixelRatioHack;
         image.height = this.height() / pixelRatioHack;
-        const sourceCtx = image.getContext('2d');
 
-
-        if(this.chart){
-            this.chart.destroy();
-        }
-        
         const chartConfig = this.getChartJSConfig();
-        this.chart = new Chart(sourceCtx, chartConfig);
-        dstCtx.drawImage(image, 0, 0);
+        if (this.chart) {
+            this.chart.data = chartConfig.data;
+            this.chart.options = chartConfig.options;
+            this.chart.update();
+        } else {
+            const sourceCtx = image.getContext('2d');
+            this.chart = new Chart(sourceCtx, chartConfig);
+            setTimeout(() => this.rerender(), 500);
+        }
+        console.log('this.chart', this.chart);
+    };
+
+    GraphMorph.prototype.setExtent = function (aPoint) {
+        GraphMorph.uber.setExtent.call(this, aPoint);
+        if (this.chart) {
+            const canvas = this.chart.ctx.canvas;
+            const pixelRatioHack = window.devicePixelRatio || 1.0;
+            canvas.width = this.width() / pixelRatioHack;
+            canvas.height = this.height() / pixelRatioHack;
+            this.chart.width = canvas.width;
+            this.chart.height = canvas.height;
+            this.chart.update();
+            setTimeout(() => this.rerender(), 150);
+        }
+    };
+
+    GraphMorph.prototype.superRender = Morph.prototype.render;
+    GraphMorph.prototype.render = function (dstCtx) {
+        if (!this.table) {
+            console.log('no table!');
+            return;
+        }
+        const canvas = this.chart.ctx.canvas;
+        //const pixelRatioHack = window.devicePixelRatio || 1.0;
+        //canvas.width = this.width() / pixelRatioHack;
+        //canvas.height = this.height() / pixelRatioHack;
+
+        // Unfortunately, rendering ChartJS directly to dstCtx results
+        // in a white screen in chrome/chromium so we will render to an
+        // intermediate canvas and then copy the image to dstCtx
+        dstCtx.drawImage(canvas, 0, 0);
     };
 
     GraphMorph.prototype.getChartJSConfig = function () {
@@ -880,6 +917,363 @@
                             align: 'center',
                             text: 'Time in s'
                         }
+                    }
+                }
+            }
+        };
+    };
+
+    GraphMorph.prototype.getChartJSConfig = function () {
+    return {
+            type: 'line',
+            data: {
+                labels: [
+    "0.000",
+    "0.016",
+    "0.034",
+    "0.050",
+    "0.067",
+    "0.083",
+    "0.100",
+    "0.117",
+    "0.133",
+    "0.150",
+    "0.167",
+    "0.183",
+    "0.200",
+    "0.218",
+    "0.233",
+    "0.250",
+    "0.266",
+    "0.283",
+    "0.300",
+    "0.316",
+    "0.333",
+    "0.350",
+    "0.366",
+    "0.383",
+    "0.400",
+    "0.418",
+    "0.433",
+    "0.450",
+    "0.466",
+    "0.484",
+    "0.500",
+    "0.517",
+    "0.533",
+    "0.550",
+    "0.566",
+    "0.583",
+    "0.600",
+    "0.616",
+    "0.633",
+    "0.650",
+    "0.666",
+    "0.683",
+    "0.700",
+    "0.716",
+    "0.734",
+    "0.750",
+    "0.768",
+    "0.783",
+    "0.800",
+    "0.816",
+    "0.833",
+    "0.850",
+    "0.866",
+    "0.883",
+    "0.900",
+    "0.918",
+    "0.934",
+    "0.950",
+    "0.966",
+    "0.983",
+    "1.000",
+    "1.016",
+    "1.033",
+    "1.050",
+    "1.066",
+    "1.083",
+    "1.100",
+    "1.116",
+    "1.133",
+    "1.150",
+    "1.166",
+    "1.183",
+    "1.199",
+    "1.216",
+    "1.233",
+    "1.251",
+    "1.266",
+    "1.283",
+    "1.300",
+    "1.316",
+    "1.333",
+    "1.350",
+    "1.366",
+    "1.383",
+    "1.400",
+    "1.417",
+    "1.433",
+    "1.450",
+    "1.466",
+    "1.483",
+    "1.500",
+    "1.517",
+    "1.533",
+    "1.550",
+    "1.566",
+    "1.583",
+    "1.600",
+    "1.616",
+    "1.633",
+    "1.650",
+    "1.666",
+    "1.683",
+    "1.700",
+    "1.716",
+    "1.733",
+    "1.750",
+    "1.768",
+    "1.783",
+    "1.800",
+    "1.816",
+    "1.833",
+    "1.850",
+    "1.866",
+    "1.885",
+    "1.901",
+    "1.919",
+    "1.934",
+    "1.951",
+    "1.967",
+    "1.985",
+    "2.001",
+    "2.017",
+    "2.033",
+    "2.050",
+    "2.067",
+    "2.083",
+    "2.100",
+    "2.116",
+    "2.133",
+    "2.150",
+    "2.166",
+    "2.183",
+    "2.200",
+    "2.216",
+    "2.234",
+    "2.251",
+    "2.267",
+    "2.285",
+    "2.300",
+    "2.317",
+    "2.333",
+    "2.351",
+    "2.367",
+    "2.383",
+    "2.400",
+    "2.416",
+    "2.435",
+    "2.450",
+    "2.466",
+    "2.483",
+    "2.500",
+    "2.517",
+    "2.536",
+    "2.550",
+    "2.566",
+    "2.583",
+    "2.600",
+    "2.616"
+],
+                datasets: [
+    {
+        "label": "Sprite x position in m",
+        "borderColor": "rgb(255,0,0)",
+        "backgroundColor": "rgb(255,0,0)",
+        "data": [
+            0,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5,
+            0.6,
+            0.7,
+            0.8,
+            0.9,
+            1,
+            1.1,
+            1.2,
+            1.3,
+            1.4,
+            1.5,
+            1.6,
+            1.7,
+            1.8,
+            1.9,
+            2,
+            2.1,
+            2.2,
+            2.3,
+            2.4,
+            2.5,
+            2.6,
+            2.7,
+            2.8,
+            2.9,
+            3,
+            3.1,
+            3.2,
+            3.3,
+            3.4,
+            3.5,
+            3.6,
+            3.7,
+            3.8,
+            3.9,
+            4,
+            4.1,
+            4.2,
+            4.3,
+            4.4,
+            4.5,
+            4.6,
+            4.7,
+            4.8,
+            4.9,
+            5,
+            5.1,
+            5.2,
+            5.3,
+            5.4,
+            5.5,
+            5.6,
+            5.7,
+            5.8,
+            5.9,
+            6,
+            6.1,
+            6.2,
+            6.3,
+            6.4,
+            6.5,
+            6.6,
+            6.7,
+            6.8,
+            6.9,
+            7,
+            7.1,
+            7.2,
+            7.3,
+            7.4,
+            7.5,
+            7.6,
+            7.7,
+            7.8,
+            7.9,
+            8,
+            8.1,
+            8.2,
+            8.3,
+            8.4,
+            8.5,
+            8.6,
+            8.7,
+            8.8,
+            8.9,
+            9,
+            9.1,
+            9.2,
+            9.3,
+            9.4,
+            9.5,
+            9.6,
+            9.7,
+            9.8,
+            9.9,
+            10,
+            10.1,
+            10.2,
+            10.3,
+            10.4,
+            10.5,
+            10.6,
+            10.7,
+            10.8,
+            10.9,
+            11,
+            11.1,
+            11.2,
+            11.3,
+            11.4,
+            11.5,
+            11.6,
+            11.7,
+            11.8,
+            11.9,
+            12,
+            12.1,
+            12.2,
+            12.3,
+            12.4,
+            12.5,
+            12.6,
+            12.7,
+            12.8,
+            12.9,
+            13,
+            13.1,
+            13.2,
+            13.3,
+            13.4,
+            13.5,
+            13.6,
+            13.7,
+            13.8,
+            13.9,
+            14,
+            14.1,
+            14.2,
+            14.3,
+            14.4,
+            14.5,
+            14.6,
+            14.7,
+            14.8,
+            14.9,
+            15,
+            15.1,
+            15.2,
+            15.3,
+            15.4,
+            15.5,
+            15.6,
+            15.7
+        ],
+        "borderWidth": 1,
+        "pointRadius": 2
+    }
+]
+            },
+            options: {
+                responsive: false,
+                scales: {
+                    x: {
+                        display: true,
+                        ticks: {
+                            autoSkip: true,
+                            autoSkipPadding: 20
+                        },
+                        title: {
+                            display: true,
+                            align: 'center',
+                            text: 'Time in s'
+                        }
+                    }, 
+                    y: {
+                        display: true
                     }
                 }
             }
@@ -976,6 +1370,7 @@
          if (this.body instanceof TableFrameMorph) {
              this.body.tableMorph.fixLayout();
          } else if (this.body instanceof GraphMorph) {
+            this.body.updateChart();
             this.body.rerender();
             this.body.changed();
          }
