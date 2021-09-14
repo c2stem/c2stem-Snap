@@ -1329,6 +1329,11 @@
      };
  
      GraphDialogMorph.prototype.exportTable = function () {
+         if (this.mode === 'table') {
+            SnapActions.tableDialog("export");
+          } else {
+            SnapActions.graphDialog("export");
+          }
          if (this.parent instanceof WorldMorph) {
              var ide = this.parent.children[0];
              ide.saveFileAs(this.table.toCSV(), 'text/csv;chartset=utf-8', 'simdata');
@@ -1378,12 +1383,23 @@
 
      // Graph IDE morph
     IDE_Morph.prototype.openGraphDialog = function () {
+        SnapActions.graphDialog("open");
         if (!this.graphDialog) {
             this.graphDialog = new GraphDialogMorph(extension.graphTable);
         }
         
         this.graphDialog.popUp(this.world());
     };
+
+    GraphDialogMorph.prototype.ok = function () {
+      if (this.mode === 'table') {
+        SnapActions.tableDialog("close");
+      } else {
+        SnapActions.graphDialog("close");
+      }
+      GraphDialogMorph.uber.ok.call(this);
+    };
+
 
     // ------- Table -------
 
@@ -1409,6 +1425,7 @@
 
     // Table IDE Morph 
     IDE_Morph.prototype.openTableDialog = function () {
+        SnapActions.tableDialog("open");
         if (!this.tableDialog) {
             this.tableDialog = new GraphDialogMorph(extension.graphTable, 'table');
         }
@@ -1483,6 +1500,12 @@
             this.show();
         }
     };
+
+    SnapActions.addUserActions(
+        'graphDialog',
+        'tableDialog'
+    );
+
 
     NetsBloxExtensions.register(SimulationExtension);
 
