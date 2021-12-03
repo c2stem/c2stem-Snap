@@ -85,6 +85,21 @@
             });
         }
 
+        async saveToCloud(name) {
+            this.call({
+                type: 'save-cloud',
+                name: name,
+            });
+        }
+
+        async publishProject(name, publish) {
+            this.call({
+                type: 'publish',
+                name: name,
+                publish: publish,
+            });
+        }
+        
         genUuid() {
             return Date.now() + Math.floor(Math.random() * 1000);
         }
