@@ -461,6 +461,8 @@ ActionManager.prototype._isBatchEvent = function(msg) {
 ActionManager.prototype.onReceiveAction = function(msg) {
     if (this.isPreviousAction(msg) && !this.isAlwaysAllowed(msg)) return;
     if (this.isUserAction(msg)) {
+        logger.debug('received "' + msg.type + '" event ' + msg.id + ':', msg);
+        this.afterActionApplied(msg);
         if (!SnapUndo.contains(msg)) {
             SnapUndo.record(msg);
         }
