@@ -457,6 +457,23 @@ IDE_Morph.prototype.initializeEmbeddedAPI = function () {
         case 'run-script':
             self.runScripts();
             break;
+        case 'global-variables':
+        {
+            const {id} = data;
+            const variables = self.globalVariables;
+            const type = 'reply';
+            event.source.postMessage({id, type, variables}, event.origin);
+            break;
+        }
+        case 'stage-image':
+        {
+            const {id} = data;
+            var stage = self.children[4];
+            const stageImage = stage.fullImage().toDataURL();
+            const type = 'reply';
+            event.source.postMessage({id, type, stageImage}, event.origin);
+            break;
+        }
         }
     };
 
