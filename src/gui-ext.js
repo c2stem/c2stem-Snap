@@ -454,6 +454,9 @@ IDE_Morph.prototype.initializeEmbeddedAPI = function () {
                 break;
             }
             break;
+        case 'run-script':
+            self.runScripts();
+            break;
         }
     };
 
