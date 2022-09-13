@@ -456,6 +456,10 @@ IDE_Morph.prototype.initializeEmbeddedAPI = function () {
             break;
         case 'run-script':
             self.runScripts();
+            if (self.embedOverlay) {
+                self.embedOverlay.destroy();
+                self.embedPlayButton.destroy();
+            }
             break;
         case 'global-variables':
         {
@@ -468,7 +472,7 @@ IDE_Morph.prototype.initializeEmbeddedAPI = function () {
         case 'stage-image':
         {
             const {id} = data;
-            var stage = self.children[4];
+            var stage = self.children.filter(morph => morph.name === 'Stage')[0];
             const stageImage = stage.fullImage().toDataURL();
             const type = 'reply';
             event.source.postMessage({id, type, stageImage}, event.origin);
