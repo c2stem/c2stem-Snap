@@ -466,6 +466,13 @@ IDE_Morph.prototype.interpretUrlAnchors = async function (loc) {
         if (!myself.isEmbedMode) {
             myself.world().worldCanvas.focus();
         }
+        if (dict.embedModeNoFlag) {
+            myself.setEmbedMode();
+            if (myself.embedOverlay) {
+                myself.embedOverlay.destroy();
+                myself.embedPlayButton.destroy();
+            }
+        }
     }
 
     dict = {};
