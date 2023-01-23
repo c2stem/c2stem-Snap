@@ -1642,6 +1642,7 @@ EditRoleMorph.prototype.moveToRole = function() {
                 ide,
                 function () {
                     ide.showMessage('Saved ' + currentRole + ' to cloud!', 2);
+                    ide.events.dispatchEvent(new CustomEvent('projectSaved'));
                     callback();
                 },
                 ide.cloudError()
