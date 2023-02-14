@@ -651,8 +651,9 @@ Cloud.prototype.getProject = function (id, callBack, errorCall, roleId) {
     );
 };
 
-Cloud.prototype.getProjectByName = function (owner, name, callBack, errorCall) {
+Cloud.prototype.getProjectByName = function (owner, name) {
     var myself = this;
+    const deferred = utils.defer();
 
     this.reconnect(
         function () {
@@ -661,14 +662,18 @@ Cloud.prototype.getProjectByName = function (owner, name, callBack, errorCall) {
                 function (response) {
                     var xml = response[0];
                     myself.setLocalState(xml.ProjectID, xml.RoleID);
-                    callBack(xml);
+                    // callBack(xml);
+                    deferred.resolve(xml);
                 },
-                errorCall,
+                // errorCall,
+                deferred.reject,
                 [owner, name]
             );
         },
-        errorCall
+        // errorCall
+        deferred.reject
     );
+    return deferred.promise;
 };
 
 Cloud.prototype.getCollaboratorList = function (callBack, errorCall) {
